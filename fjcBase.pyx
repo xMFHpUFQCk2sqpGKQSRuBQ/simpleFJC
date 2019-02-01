@@ -171,24 +171,24 @@ cdef class constantsFJC:
     def setRDockableStart(self, double x=0.0, double y=0.0, double z=0.0):
         self.RDockableStart = np.asarray([x, y, z], dtype=double)
         
-    def setRDockableEnd(self, x=3.5, y=0.0, z=0.0):
+    def setRDockableEnd(self, double x=3.5, double y=0.0, double z=0.0):
         self.RDockableEnd = np.asarray([x, y, z], dtype=double)
         
     def recalcExcludeCentre(self):
         self.excludeCentre = self.excludeCentre - self.RD
         
-    def setTetherExclude(self, r=2.0):
+    def setTetherExclude(self, double r=2.0):
         self.tetherExclude  = r
         self.tetherExclude2 = self.tetherExclude ** 2.0 
     
-    def excludeMultiplier(self, Rx, Ry, Rz):
+    def excludeMultiplier(self, double Rx, double Ry, double Rz):
         cdef double[:] R = np.array([Rx, Ry, Rz])
         cdef double[:] RE = R + self.RD 
         cdef double dRE2 = np.sum(RE * RE)
     
         return (dRE2 >= self.tetherExclude2)
     
-    def setExcludeCentre(self,x=0.0,y=0.0,z=0.0):
+    def setExcludeCentre(self,double x=0.0, double y=0.0, double z=0.0):
             self.excludeCentre = np.asarray([x,y,z])
         
     cdef _calcRD(self):
@@ -389,3 +389,160 @@ cpdef testC():
     logging.info("{} - {} - {} ".format(c.phiC2_T, c.phiC2_TD , c.phiC2_F))
     
     logging.info("FR: {} RTDx: {}".format(fff , _RTDx) ) 
+
+
+"""
+Implementing some generic integral algorithms
+wrapping in numba autojit
+"""
+
+def int_tra(f, a, b, N, prevI=None, error=0):
+    if error != 0:
+        startN = 10
+        i = 1
+        I = int_tra(f, a, b, startN)
+        I2 = int_tra(f, a, b, startN * 2 ** i, I)
+        while (np.abs(I2 - I) / 3 > error).any():
+            i += 1
+            I = I2
+            I2 = int_tra(f, a, b, startN * 2 ** i, I)
+        return I2
+    k = np.arange(1, N)
+    h = (b - a) / N
+    if prevI is None:
+        s = h / 2 * (f(a) + f(b))
+    else:
+        s = prevI / 2
+        k = k[::2]
+    return s + h * np.nansum(f(a + k * h), axis=0)
+
+int_tra = autojit(int_tra)
+
+def int_simp(f, a, b, N, error=0):
+    k = np.arange(1, N)
+    h = (b - a) / N
+    return h / 3 * (f(a) + f(b) + 4 * np.nansum(f(a + k[::2] * h), axis=0) + 2 * np.nansum(f(a + k[1::2] * h), axis=0))
+
+int_simp = autojit(int_simp)
+
+def int_romb(f, a, b, m, error=0):
+    N = 3 
+    prevI = np.array([int_tra(f, a, b, N)])
+    for i in range(1, m + 1):
+        nextI = np.empty([i + 1], dtype=np.ndarray)
+        nextI[0] = int_tra(f, a, b, N * 2 ** i, prevI[0])
+        for j in range(1, i + 1):
+            e = (nextI[j - 1] - prevI[j - 1]) / (4 ** j - 1)
+            nextI[j] = nextI[j - 1] + e
+        prevI = nextI
+        if (abs(e) < error).all():
+            break
+    return nextI[-1]
+
+int_romb = autojit(int_romb)
+
+def int_gauss(f, a, b, N, error=0):
+    k = np.arange(N)
+    s, w = gaussxwab(N, a, b)
+#     w = np.asarray( w )
+    result = f(s[k])
+    while w.ndim != result.ndim:
+        w = w[:, None]
+    return np.nansum((w * result), axis=0)
+
+int_gauss = autojit(int_gauss)
+
+def permutexyz3D(x,y,z):
+    x = x[:, None, None]
+    y = y[None, :, None]
+    z = z[None, None, :]
+
+    return x, y, z
+
+permutexyz3D = autojit(permutexyz3D)
+
+def permutexyz(x=0, y=0, z=0):
+    isx = isinstance(x, np.ndarray)
+    isy = isinstance(y, np.ndarray)
+    isz = isinstance(z, np.ndarray)
+    
+    if isx and isy and isz:
+        x = x[:, None, None]
+        y = y[None, :, None]
+        z = z[None, None, :]
+    elif isx and isy:
+        x = x[:, None]
+        y = y[None, :]
+    elif isy and isz:
+        y = y[:, None]
+        z = z[None, :]
+    elif isx and isz:
+        x = x[:, None]
+        z = z[None, :]
+    return x, y, z
+
+permutexyz = autojit(permutexyz)
+
+def integrate(f, bounds, steps=10 ** 5, method="trap", error=0):
+    int_func = int_tra
+    method = method.lower()
+    if method in ["trap", "trapezoid"]:
+        int_func = int_tra
+    elif method in ["romb", "romberg"]:
+        int_func = int_romb
+    elif method in ["simp", "simpson"]:
+        int_func = int_simp
+    elif method in ["gauss", "gaussian"]:
+        int_func = int_gauss
+    if len(bounds) == 1:
+        def integrand(x):
+            return f(x)
+        return int_func(integrand, bounds[0][0], bounds[0][1], steps, error=error)
+    elif len(bounds) == 2:
+        def getintegrand(Y):
+            def integrand(X):
+                x, y, _ = permutexyz(X, Y)
+                return f(x, y)
+            return integrand 
+        def intx(y):
+            return int_func(getintegrand(y), bounds[0][0], bounds[0][1], steps, error=error)
+        return int_func(intx, bounds[1][0], bounds[1][1], steps, error=error)
+    elif len(bounds) == 3:
+        def getintegrand(Y, Z):
+            def integrand(X):
+                x, y, z = permutexyz(X, Y, Z)
+                return f(x, y, z)
+            return integrand
+        def intx(Z):
+            def inner(y):
+                return int_func(getintegrand(y, Z), bounds[0][0], bounds[0][1], steps, error=error)
+            return inner
+        def inty(z):
+            return int_func(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
+        return int_func(inty, bounds[2][0], bounds[2][1], steps, error=error)
+
+integrate = autojit(integrate)
+
+def tra3D(f, bounds, steps=10 ** 5, method="trap", error=0):
+    def getintegrand(Y, Z):
+        def integrand(X):
+            x, y, z = permutexyz3D(X, Y, Z)
+            return f(x, y, z)
+        return integrand
+    def intx(Z):
+        def inner(y):
+            return int_tra(getintegrand(y, Z), bounds[0][0], bounds[0][1], steps, error=error)
+        return inner
+    def inty(z):
+        return int_tra(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
+    return int_tra(inty, bounds[2][0], bounds[2][1], steps, error=error)
+
+tra3D = autojit(tra3D)
+    
+def integrateP(f, bounds, steps=10 ** 5, method="trap", error=0, args=[]):
+    pf = f
+    
+    if (len(args) > 0) :
+        pf = partial(f, args,)
+    
+    return integrate(pf, bounds, steps, method, error)
