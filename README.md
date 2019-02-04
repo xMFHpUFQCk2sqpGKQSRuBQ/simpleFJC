@@ -8,9 +8,9 @@ using cython, numba, and numpy
 Using conda environment is ( _probably_ ) not required, but recommended<br>
 As I test in conda (Miniconda3), there is a slight chance it having issues in pure python  
 
-To install, run:
+To install, run:<br>
 <code> python setup.py install </code>
-
+<br>
 
 ### requirements:
 
