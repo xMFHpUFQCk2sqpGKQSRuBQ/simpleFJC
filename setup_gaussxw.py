@@ -3,18 +3,9 @@ from Cython.Build import cythonize
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
-ext_modules=[
-    Extension("calcFJC",
-              ["calcFJC.pyx"],
-              libraries=["m"],
-              extra_compile_args = ["-O3", "-ffast-math", "-march=native", "-fopenmp" ],
-              extra_link_args=['-fopenmp']
-              ) 
-]
-
 setup(
-    name='calcFJC',
-    author='Zzz',
+    name='gaussxw',
+    author='Mark Newman',
     description='''
     A simple tool to perform Freely-Joint Chain calculations
     using numerical integration using Monte Carlo techniques.
@@ -22,7 +13,7 @@ setup(
     Multi-process CYthon version.
     ''',
     version='1.0-b1',
-    py_modules=['calcFJC'],
+    py_modules=['gaussxw'],
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
     long_description=open('README.txt').read(),
     
