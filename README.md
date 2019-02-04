@@ -17,6 +17,7 @@ Installation requires python3 and the following modules:
 * numba
 * numpy
 * logging
+* functools
 
 ### recommended
 

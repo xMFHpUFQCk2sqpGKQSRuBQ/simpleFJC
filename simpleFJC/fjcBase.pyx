@@ -6,6 +6,7 @@ from gaussxw import gaussxwab
 cimport cython
 from numba.decorators import jit, autojit
 from numba import vectorize, float64, float32
+from functools import partial
 
 # turn on logging
 import logging
