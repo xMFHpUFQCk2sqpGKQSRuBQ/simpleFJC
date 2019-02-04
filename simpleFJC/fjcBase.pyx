@@ -166,7 +166,7 @@ cdef class constantsFJC:
         self.PDocked = 1.0 - self.PUndocked
         
     def setRTarget(self, double x=8.0, double y=0.0, double z=0.0):
-        self.RTarget = np.array([x, y, z], dtype=double) - self.RD
+        self.RTarget = np.array([x, y, z], dtype=np.double_t) - self.RD
     
     def setRTarget_Back(self, double x=-8.0, double y=0.0, double z=0.0):
         self.RTarget_Back = np.array([x, y, z], dtype=double) - self.RD
