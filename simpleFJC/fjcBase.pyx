@@ -169,13 +169,13 @@ cdef class constantsFJC:
         self.RTarget = np.array([x, y, z], dtype=np.double) - self.RD
     
     def setRTarget_Back(self, double x=-8.0, double y=0.0, double z=0.0):
-        self.RTarget_Back = np.array([x, y, z], dtype=double) - self.RD
+        self.RTarget_Back = np.array([x, y, z], dtype=np.double) - self.RD
         
     def setRDockableStart(self, double x=0.0, double y=0.0, double z=0.0):
-        self.RDockableStart = np.array([x, y, z], dtype=double)
+        self.RDockableStart = np.array([x, y, z], dtype=np.double)
         
     def setRDockableEnd(self, double x=3.5, double y=0.0, double z=0.0):
-        self.RDockableEnd = np.array([x, y, z], dtype=double)
+        self.RDockableEnd = np.array([x, y, z], dtype=np.double)
         
     def recalcExcludeCentre(self):
         self.excludeCentre = self.excludeCentre - self.RD
@@ -185,9 +185,9 @@ cdef class constantsFJC:
         self.tetherExclude2 = self.tetherExclude ** 2.0 
     
     def excludeMultiplier(self, double Rx, double Ry, double Rz):
-        cdef np.ndarray[dtype=double] R = np.array([Rx, Ry, Rz])
-        cdef np.ndarray[dtype=double] RE = R + self.RD 
-        cdef double dRE2 = np.sum(RE * RE)
+        cdef double[:] R = np.array([Rx, Ry, Rz], dtype=np.double)
+        cdef double[:] RE = np.add(R , self.RD) 
+        cdef double dRE2 = np.sum(np.multiply(RE , RE))
     
         return (dRE2 >= self.tetherExclude2)
     
