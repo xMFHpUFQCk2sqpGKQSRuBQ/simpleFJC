@@ -26,6 +26,11 @@ Installation requires python3 and the following modules:
 ### Windows
 cython requires a c/c++ compiler. Visual Studio Community Edition is freely available from Microsoft and is supported by cython.
 
+# Examples
+
+Contains the python script used to generate the FJC figures for the paper:
+
+
 # Chain algorithms:
 
 (NYI - not yet implemented)

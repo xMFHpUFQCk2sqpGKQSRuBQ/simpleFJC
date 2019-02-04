@@ -311,7 +311,7 @@ cdef class constantsFJC:
         
         LDm = self.ND * self.kuhn
         if (self.LD > LDm) :
-            print "WARNING: dock length too large!"
+            logging.warn("WARNING: dock length too large!")
             self.LD = LDm
         
         self.NTD = self.NT - self.ND
@@ -483,7 +483,7 @@ def permutexyz(x=0, y=0, z=0):
 
 permutexyz = autojit(permutexyz)
 
-def integrate(f, bounds, steps=10 ** 5, method="trap", error=0):
+def integrate(object f,np.ndarray[dtype=double] bounds, int steps=10 ** 5, str method="trap", double error=0):
     int_func = int_tra
     method = method.lower()
     if method in ["trap", "trapezoid"]:
@@ -523,7 +523,7 @@ def integrate(f, bounds, steps=10 ** 5, method="trap", error=0):
 
 integrate = autojit(integrate)
 
-def tra3D(f, bounds, steps=10 ** 5, method="trap", error=0):
+def tra3D(object f, np.ndarray[dtype=double] bounds, int steps=10 ** 5, double error=0):
     def getintegrand(Y, Z):
         def integrand(X):
             x, y, z = permutexyz3D(X, Y, Z)
@@ -538,6 +538,23 @@ def tra3D(f, bounds, steps=10 ** 5, method="trap", error=0):
     return int_tra(inty, bounds[2][0], bounds[2][1], steps, error=error)
 
 tra3D = autojit(tra3D)
+
+def gauss3D(object f, np.ndarray[dtype=double] bounds, int steps=35, double error=0):
+    def getintegrand(Y, Z):
+        def integrand(X):
+            x, y, z = permutexyz3D(X, Y, Z)
+            return f(x, y, z)
+        return integrand
+    def intx(Z):
+        def inner(y):
+            return int_gauss(getintegrand(y, Z), bounds[0][0], bounds[0][1], steps, error=error)
+        return inner
+    def inty(z):
+        return int_tra(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
+    return int_tra(inty, bounds[2][0], bounds[2][1], steps, error=error)
+
+gauss3D = autojit(gauss3D)
+
     
 def integrateP(f, bounds, steps=10 ** 5, method="trap", error=0, args=[]):
     pf = f
