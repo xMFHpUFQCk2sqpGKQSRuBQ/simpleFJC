@@ -261,16 +261,16 @@ cdef class constantsFJC:
         self.limZ1S = -1.0 * self.L
         self.limZ2S = self.L
         
-        self.limLTD   = np.array([ [-self.LTD, self.LTD], [-self.LTD, self.LTD], [-self.LTD, self.LTD] ], dtype=double)
-        self.limLT    = np.array([ [-self.LT, self.LT], [-self.LT, self.LT], [-self.LT, self.LT] ], dtype=double)
-        self.limLTH   = np.array([ [-self.LT, self.LT], [0.0, self.LT], [-self.LT, self.LT] ], dtype=double)
-        self.limLU    = np.array([ [-self.LU, self.LU], [-self.LU, self.LU], [-self.LU, self.LU] ], dtype=double)
-        self.limLUH   = np.array([ [-self.LU, self.LU], [0.0, self.LU], [-self.LU, self.LU] ], dtype=double)
+        self.limLTD   = np.array([ [-self.LTD, self.LTD], [-self.LTD, self.LTD], [-self.LTD, self.LTD] ], dtype=np.double)
+        self.limLT    = np.array([ [-self.LT, self.LT], [-self.LT, self.LT], [-self.LT, self.LT] ], dtype=np.double)
+        self.limLTH   = np.array([ [-self.LT, self.LT], [0.0, self.LT], [-self.LT, self.LT] ], dtype=np.double)
+        self.limLU    = np.array([ [-self.LU, self.LU], [-self.LU, self.LU], [-self.LU, self.LU] ], dtype=np.double)
+        self.limLUH   = np.array([ [-self.LU, self.LU], [0.0, self.LU], [-self.LU, self.LU] ], dtype=np.double)
         
-        self.limVLTD  = np.array([ [-self.LTD, self.LTD], [-self.LTD, self.LTD], [-self.LTD, self.LTD] ], dtype=double)
-        self.limVLT   = np.array([ [-self.LT, self.LT], [-self.LT, self.LT], [-self.LT, self.LT] ], dtype=double)
-        self.limVLTDH = np.array([ [-self.LTD, self.LTD], [0.0, self.LTD], [-self.LTD, self.LTD] ], dtype=double)
-        self.limVLTH  = np.array([ [-self.LT, self.LT], [0.0, self.LT], [-self.LT, self.LT] ], dtype=double)
+        self.limVLTD  = np.array([ [-self.LTD, self.LTD], [-self.LTD, self.LTD], [-self.LTD, self.LTD] ], dtype=np.double)
+        self.limVLT   = np.array([ [-self.LT, self.LT], [-self.LT, self.LT], [-self.LT, self.LT] ], dtype=np.double)
+        self.limVLTDH = np.array([ [-self.LTD, self.LTD], [0.0, self.LTD], [-self.LTD, self.LTD] ], dtype=np.double)
+        self.limVLTH  = np.array([ [-self.LT, self.LT], [0.0, self.LT], [-self.LT, self.LT] ], dtype=np.double)
         
         
         self.phiC1_T = ((3.0 / (self.pi2kuhn2 * self.NT)) ** (1.5))
@@ -383,8 +383,8 @@ def getC():
 cpdef testC():
     cdef double _RTDx = 2.3 - c.LD 
     
-    cdef double[:] _RTD = np.array([_RTDx, 0.0, 0.0], dtype=double)
-    cdef double[:] _RF = np.array([0.7, 0.0, 0.0], dtype=double)
+    cdef double[:] _RTD = np.array([_RTDx, 0.0, 0.0], dtype=np.double)
+    cdef double[:] _RF = np.array([0.7, 0.0, 0.0], dtype=np.double)
     cdef double[:] fff = phiRTD(_RTD) * phiRF(_RF)
     
     logging.info("TC: {} {} {} {} {} Fx: {}".format(c.NF, c.NT, c.NTD, c.ND , c.LD, c.forceX) ) 
