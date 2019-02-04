@@ -198,16 +198,16 @@ cdef class constantsFJC:
         cdef double dockingLength = self.ND * self.kuhn * self.dockPercent
         
 #         print("{} - {}".format(self.RDockableEnd, self.RDockableStart))
-        cdef double[:] dockVector = self.RDockableEnd - self.RDockableStart
+        cdef double[:] dockVector = np.substract(self.RDockableEnd, self.RDockableStart)
         cdef double maxDockLength = np.sqrt(np.square(dockVector).sum())
         
         if (dockingLength > maxDockLength):
             dockingLength = maxDockLength
         
         if maxDockLength > 0.0 :
-            dockVector = dockVector / maxDockLength * dockingLength            
+            dockVector = np.multiply(np.divide(dockVector , maxDockLength) , dockingLength)            
         
-        self.RD = self.RDockableStart + dockVector
+        self.RD = np.add(self.RDockableStart , dockVector)
         self.LD = dockingLength
         
         return maxDockLength
