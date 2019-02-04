@@ -182,8 +182,8 @@ cdef class constantsFJC:
         self.tetherExclude2 = self.tetherExclude ** 2.0 
     
     def excludeMultiplier(self, double Rx, double Ry, double Rz):
-        cdef double[:] R = np.array([Rx, Ry, Rz])
-        cdef double[:] RE = R + self.RD 
+        cdef np.ndarray[dtype=double] R = np.array([Rx, Ry, Rz])
+        cdef np.ndarray[dtype=double] RE = R + self.RD 
         cdef double dRE2 = np.sum(RE * RE)
     
         return (dRE2 >= self.tetherExclude2)
@@ -339,7 +339,7 @@ cdef calcPhi(double c1, double c2, np.ndarray R, double ML):
     
     return  ( radE2 > c.tetherExclude2 ) * ( ML > r2 ) *  c1 * np.exp(r2 / c2 )
 
-cdef calcVolume(np.ndarray R, double ML):
+cdef calcVolume(double[:] R, double ML):
     cdef double[:] radE  = R - c.excludeCentre
     cdef double    radE2 = doter( radE, radE)
     cdef double    r2    = doter(R, R) 
@@ -483,7 +483,7 @@ def permutexyz(x=0, y=0, z=0):
 
 permutexyz = autojit(permutexyz)
 
-def integrate(object f,np.ndarray[dtype=double] bounds, int steps=10 ** 5, str method="trap", double error=0):
+def integrate(object f,double[:,:] bounds, int steps=10 ** 5, str method="trap", double error=0):
     int_func = int_tra
     method = method.lower()
     if method in ["trap", "trapezoid"]:
@@ -523,7 +523,7 @@ def integrate(object f,np.ndarray[dtype=double] bounds, int steps=10 ** 5, str m
 
 integrate = autojit(integrate)
 
-def tra3D(object f, np.ndarray[dtype=double] bounds, int steps=10 ** 5, double error=0):
+def tra3D(object f, double[:,:] bounds, int steps=10 ** 5, double error=0):
     def getintegrand(Y, Z):
         def integrand(X):
             x, y, z = permutexyz3D(X, Y, Z)
@@ -539,7 +539,7 @@ def tra3D(object f, np.ndarray[dtype=double] bounds, int steps=10 ** 5, double e
 
 tra3D = autojit(tra3D)
 
-def gauss3D(object f, np.ndarray[dtype=double] bounds, int steps=35, double error=0):
+def gauss3D(object f, double[:,:] bounds, int steps=35, double error=0):
     def getintegrand(Y, Z):
         def integrand(X):
             x, y, z = permutexyz3D(X, Y, Z)
