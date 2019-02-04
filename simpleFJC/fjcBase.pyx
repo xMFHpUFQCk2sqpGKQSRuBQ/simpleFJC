@@ -322,7 +322,7 @@ cdef class constantsFJC:
         
         self._calculate()
 
-    cdef public constantsFJC c = constantsFJC()
+cdef public constantsFJC c = constantsFJC()
 
 cdef double doter(np.ndarray R1, np.ndarray R2) :
     cdef object dot = np.tensordot(R1, R2, 1)
