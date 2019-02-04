@@ -17,6 +17,8 @@ cdef int KBMODE_STANDARD = 0
 cdef int KBMODE_1D       = 1
 cdef int KBMODE_2D       = 2
 
+cdef double BOLTZMANN_CONSTANT_kB = 1.3806504e-23
+
 cdef class constantsFJC:
     cdef public double kuhn
     cdef public double force
@@ -319,7 +321,7 @@ cdef class constantsFJC:
         self.NS = self.NTD + self.NF
         
         # compensating with 1e18 for the nm and nN
-        self.KBT = constants.Boltzmann * 300.0 * 1e18
+        self.KBT = BOLTZMANN_CONSTANT_kB * 300.0 * 1e18
         
         self._calculate()
 
