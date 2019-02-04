@@ -166,16 +166,16 @@ cdef class constantsFJC:
         self.PDocked = 1.0 - self.PUndocked
         
     def setRTarget(self, double x=8.0, double y=0.0, double z=0.0):
-        self.RTarget = np.asarray([x, y, z], dtype=double) - self.RD
+        self.RTarget = np.array([x, y, z], dtype=double) - self.RD
     
     def setRTarget_Back(self, double x=-8.0, double y=0.0, double z=0.0):
-        self.RTarget_Back = np.asarray([x, y, z], dtype=double) - self.RD
+        self.RTarget_Back = np.array([x, y, z], dtype=double) - self.RD
         
     def setRDockableStart(self, double x=0.0, double y=0.0, double z=0.0):
-        self.RDockableStart = np.asarray([x, y, z], dtype=double)
+        self.RDockableStart = np.array([x, y, z], dtype=double)
         
     def setRDockableEnd(self, double x=3.5, double y=0.0, double z=0.0):
-        self.RDockableEnd = np.asarray([x, y, z], dtype=double)
+        self.RDockableEnd = np.array([x, y, z], dtype=double)
         
     def recalcExcludeCentre(self):
         self.excludeCentre = self.excludeCentre - self.RD
