@@ -500,45 +500,7 @@ def permutexyz(x=0, y=0, z=0):
 
 permutexyz = autojit(permutexyz)
 
-def integrate(object f,double[:,:] bounds, int steps=10 ** 5, str method="trap", double error=0):
-    int_func = int_tra
-    method = method.lower()
-    if method in ["trap", "trapezoid"]:
-        int_func = int_tra
-    elif method in ["romb", "romberg"]:
-        int_func = int_romb
-    elif method in ["simp", "simpson"]:
-        int_func = int_simp
-    elif method in ["gauss", "gaussian"]:
-        int_func = int_gauss
-    if len(bounds) == 1:
-        def integrand(x):
-            return f(x)
-        return int_func(integrand, bounds[0][0], bounds[0][1], steps, error=error)
-    elif len(bounds) == 2:
-        def getintegrand(Y):
-            def integrand(X):
-                x, y, _ = permutexyz(X, Y)
-                return f(x, y)
-            return integrand 
-        def intx(y):
-            return int_func(getintegrand(y), bounds[0][0], bounds[0][1], steps, error=error)
-        return int_func(intx, bounds[1][0], bounds[1][1], steps, error=error)
-    elif len(bounds) == 3:
-        def getintegrand(Y, Z):
-            def integrand(X):
-                x, y, z = permutexyz(X, Y, Z)
-                return f(x, y, z)
-            return integrand
-        def intx(Z):
-            def inner(y):
-                return int_func(getintegrand(y, Z), bounds[0][0], bounds[0][1], steps, error=error)
-            return inner
-        def inty(z):
-            return int_func(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
-        return int_func(inty, bounds[2][0], bounds[2][1], steps, error=error)
 
-integrate = autojit(integrate)
 
 def tra3D(object f, double[:,:] bounds, int steps=10 ** 5, double error=0):
     def getintegrand(Y, Z):
