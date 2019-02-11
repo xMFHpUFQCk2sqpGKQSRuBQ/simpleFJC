@@ -572,7 +572,7 @@ def gauss3D(object f, double[:,:] bounds, int steps=35, double error=0):
 
 gauss3D = autojit(gauss3D)
 
-
+'''
 def gauss6D(f, bounds, steps=35, error=0.0):
     def getintegrand(Y, Z, XI, YI, ZI):
         def integrand(X):
@@ -600,7 +600,7 @@ def gauss6D(f, bounds, steps=35, error=0.0):
     return int_gauss(intyi, bounds[5][0], bounds[5][1], steps, error=error)
 
 gauss6D = autojit(gauss6D)
-
+'''
 
 def integrateP(f, bounds, steps=10 ** 5, method="trap", error=0, args=[]):
     pf = f
