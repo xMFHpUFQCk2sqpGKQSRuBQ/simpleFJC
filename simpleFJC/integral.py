@@ -227,7 +227,7 @@ def trap3D(f, bounds, steps=35, error=0.0):
         return int_tra(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
     return int_tra(inty, bounds[2][0], bounds[2][1], steps, error=error)
 
-def _integrate(object f,double[:,:] bounds, int steps=10 ** 5, str method="trap", double error=0):
+def integrate(f, bounds, steps=10 ** 5, method="trap", error=0.0):
     int_func = int_tra
     method = method.lower()
     if method in ["trap", "trapezoid"]:
@@ -264,8 +264,6 @@ def _integrate(object f,double[:,:] bounds, int steps=10 ** 5, str method="trap"
         def inty(z):
             return int_func(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
         return int_func(inty, bounds[2][0], bounds[2][1], steps, error=error)
-
-integrate = jit(_integrate)
 
 """
 # unfinished 6D gauss integral
