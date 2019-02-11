@@ -1,7 +1,7 @@
 import numpy as np
 from numba.decorators import jit
 from numba import prange, njit
-from gaussxw.gaussxw import gaussxwab  
+from gaussxw import gaussxwab  
 
 def _int_gauss(f, a, b, N, error=0.0):
     k = np.arange(N)
