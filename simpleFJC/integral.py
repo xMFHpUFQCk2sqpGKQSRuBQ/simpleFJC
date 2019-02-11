@@ -1,8 +1,4 @@
-# cython: language_level=3
-cimport cython
-
 import numpy as np
-cimport numpy as np
 from numba.decorators import jit
 from numba import prange, njit
 from gaussxw import gaussxwab  

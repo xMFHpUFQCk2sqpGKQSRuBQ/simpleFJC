@@ -1,18 +1,10 @@
-﻿from distutils.core import setup
-from Cython.Build import cythonize
-from distutils.extension import Extension
+﻿from Cython.Build import cythonize
+from setuptools import setup, Extension, find_packages
 from Cython.Distutils import build_ext
 
 import numpy
 
 ext_modules=[
-    Extension("simpleFJC.integral"
-              ,["simpleFJC/integral.pyx"]
-              ,libraries=[]
-              #,extra_compile_args = ["-O3", "-ffast-math", "-march=native", "-fopenmp"]
-              ,extra_link_args=['-fopenmp']
-              ,include_dirs=[numpy.get_include()]
-              ),
     Extension("simpleFJC.fjcBase"
               ,["simpleFJC/fjcBase.pyx"]
               ,libraries=[]
@@ -33,7 +25,7 @@ setup(
     py_modules=['gaussxw'],
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
     long_description=open('README.txt').read(),
-    
+    packages=find_packages(),
     cmdclass = {"build_ext": build_ext},
     ext_modules = ext_modules
 )
