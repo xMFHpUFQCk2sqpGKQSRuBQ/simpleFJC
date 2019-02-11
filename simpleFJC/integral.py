@@ -13,6 +13,22 @@ def _int_gauss(f, a, b, N, error=0.0):
 
 int_gauss = jit(_int_gauss)
 
+def _int_romb(f, a, b, m, error=0.0):
+    N = 3 
+    prevI = np.array([int_tra(f, a, b, N)])
+    for i in range(1, m + 1):
+        nextI = np.empty([i + 1], dtype=np.ndarray)
+        nextI[0] = int_tra(f, a, b, N * 2 ** i, prevI[0])
+        for j in range(1, i + 1):
+            e = (nextI[j - 1] - prevI[j - 1]) / (4 ** j - 1)
+            nextI[j] = nextI[j - 1] + e
+        prevI = nextI
+        if (abs(e) < error).all():
+            break
+    return nextI[-1]
+
+int_romb = jit(_int_romb)
+
 def _int_tra(f, a, b, N, prevI=None, error=0.0):
     if error != 0:
         startN = 10
