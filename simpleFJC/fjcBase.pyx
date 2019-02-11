@@ -1,9 +1,11 @@
 # cython: language_level=3
+cimport cython
 
 import numpy as np
 cimport numpy as np
-from gaussxw import gaussxwab   
-cimport cython
+from gaussxw import gaussxwab
+import integral   
+
 from numba.decorators import jit, autojit
 from numba import vectorize, float64, float32
 from functools import partial
@@ -399,7 +401,7 @@ Implementing some generic integral algorithms
 wrapping in numba autojit
 """
 
-def int_tra(f, a, b, N, prevI=None, error=0):
+def int_tra(f, a, b, N, prevI=None, error=0.0):
     if error != 0:
         startN = 10
         i = 1
@@ -421,14 +423,14 @@ def int_tra(f, a, b, N, prevI=None, error=0):
 
 int_tra = autojit(int_tra)
 
-def int_simp(f, a, b, N, error=0):
+def int_simp(f, a, b, N, error=0.0):
     k = np.arange(1, N)
     h = (b - a) / N
     return h / 3 * (f(a) + f(b) + 4 * np.nansum(f(a + k[::2] * h), axis=0) + 2 * np.nansum(f(a + k[1::2] * h), axis=0))
 
 int_simp = autojit(int_simp)
 
-def int_romb(f, a, b, m, error=0):
+def int_romb(f, a, b, m, error=0.0):
     N = 3 
     prevI = np.array([int_tra(f, a, b, N)])
     for i in range(1, m + 1):
@@ -444,7 +446,7 @@ def int_romb(f, a, b, m, error=0):
 
 int_romb = autojit(int_romb)
 
-def int_gauss(f, a, b, N, error=0):
+def int_gauss(f, a, b, N, error=0.0):
     k = np.arange(N)
     s, w = gaussxwab(N, a, b)
 #     w = np.asarray( w )
@@ -463,6 +465,18 @@ def permutexyz3D(x,y,z):
     return x, y, z
 
 permutexyz3D = autojit(permutexyz3D)
+
+def permutexyz6D(x,y,z,xi,yi,zi):
+    x  =  x[:, None, None, None, None, None]
+    y  =  y[None, :, None, None, None, None]
+    z  =  z[None, None, :, None, None, None]
+    xi = xi[None, None, None, :, None, None]
+    yi = yi[None, None, None, None, :, None]
+    zi = zi[None, None, None, None, None, :]
+
+    return x, y, z, xi, yi, zi
+
+permutexyz6D = autojit(permutexyz6D)
 
 def permutexyz(x=0, y=0, z=0):
     isx = isinstance(x, np.ndarray)
@@ -553,12 +567,41 @@ def gauss3D(object f, double[:,:] bounds, int steps=35, double error=0):
             return int_gauss(getintegrand(y, Z), bounds[0][0], bounds[0][1], steps, error=error)
         return inner
     def inty(z):
-        return int_tra(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
-    return int_tra(inty, bounds[2][0], bounds[2][1], steps, error=error)
+        return int_gauss(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
+    return int_gauss(inty, bounds[2][0], bounds[2][1], steps, error=error)
 
 gauss3D = autojit(gauss3D)
 
+
+def gauss6D(f, bounds, steps=35, error=0.0):
+    def getintegrand(Y, Z, XI, YI, ZI):
+        def integrand(X):
+            x, y, z, xi, yi, zi = permutexyz6D(X, Y, Z, XI, YI, ZI)
+            return f(x, y, z, xi, yi, zi)
+        return integrand
     
+    def intx(Z):
+        def inner(y):
+            return int_gauss(getintegrand(y, Z, XI, YI, ZI), bounds[0][0], bounds[0][1], steps, error=error)
+        return inner
+    def inty(z):
+        return int_gauss(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
+    def intz():
+        def inner():
+            return int_gauss(intx(z), bounds[2][0], bounds[2][1], steps, error=error)
+        return inner
+    def intxi(ZI):
+        def inner(yi):
+            return int_gauss(intx(z), bounds[3][0], bounds[3][1], steps, error=error)
+        return inner
+    def intyi(zi):
+        return int_gauss(intxi(zi)), bounds[4][0], bounds[4][1], steps, error=error)
+        pass
+    return int_gauss(intyi, bounds[5][0], bounds[5][1], steps, error=error)
+
+gauss6D = autojit(gauss6D)
+
+
 def integrateP(f, bounds, steps=10 ** 5, method="trap", error=0, args=[]):
     pf = f
     
