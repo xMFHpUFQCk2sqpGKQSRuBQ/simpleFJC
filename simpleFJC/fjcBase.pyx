@@ -4,7 +4,7 @@ cimport cython
 import numpy as np
 cimport numpy as np
 from gaussxw import gaussxwab
-import integral   
+import simpleFJC.integral as gi
 
 from numba.decorators import jit, autojit
 from numba import vectorize, float64, float32
@@ -570,4 +570,4 @@ def integrateP(f, bounds, steps=10 ** 5, method="trap", error=0, args=[]):
     if (len(args) > 0) :
         pf = partial(f, args,)
     
-    return integrate(pf, bounds, steps, method, error)
+    return gi.integrate(pf, bounds, steps, method, error)
