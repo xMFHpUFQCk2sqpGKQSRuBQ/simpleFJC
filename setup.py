@@ -22,7 +22,7 @@ setup(
     The FJC functions for the integrals
     ''',
     version='2.0-b97',
-    py_modules=['gaussxw.gaussxw'],
+    py_modules=['gaussxw.gaussxw','simpleFJC.integral'],
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
     long_description=open('README.txt').read(),
     packages=find_packages(),
