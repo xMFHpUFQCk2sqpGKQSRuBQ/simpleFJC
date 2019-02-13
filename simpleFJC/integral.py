@@ -3,7 +3,8 @@ from numba.decorators import jit
 from numba import prange, njit
 from gaussxw import gaussxwab  
 
-def _int_gauss(f, a, b, N, error=0.0):
+@njit()
+def int_gauss(f, a, b, N, error=0.0):
     k = np.arange(N)
     s, w = gaussxwab(N, a, b)
     result = f(s[k])
@@ -11,9 +12,8 @@ def _int_gauss(f, a, b, N, error=0.0):
         w = w[:, None]
     return np.nansum((w * result), axis=0)
 
-int_gauss = jit(_int_gauss)
-
-def _int_romb(f, a, b, m, error=0.0):
+@njit()
+def int_romb(f, a, b, m, error=0.0):
     N = 3 
     prevI = np.array([int_tra(f, a, b, N)])
     for i in range(1, m + 1):
@@ -27,9 +27,8 @@ def _int_romb(f, a, b, m, error=0.0):
             break
     return nextI[-1]
 
-int_romb = jit(_int_romb)
-
-def _int_tra(f, a, b, N, prevI=None, error=0.0):
+@njit()
+def int_tra(f, a, b, N, prevI=None, error=0.0):
     if error != 0:
         startN = 10
         i = 1
@@ -50,18 +49,17 @@ def _int_tra(f, a, b, N, prevI=None, error=0.0):
         k = k[::2]
     return s + h * np.sum(f(a + k * h), axis=0)
 
-int_tra = jit(_int_tra)
-
-def _int_simp(f, a, b, N, error=0):
+@njit()
+def int_simp(f, a, b, N, error=0):
     k = np.arange(1, N)
     h = (b - a) / N
     return h / 3 * (f(a) + f(b) + 4 * np.nansum(f(a + k[::2] * h), axis=0) + 2 * np.nansum(f(a + k[1::2] * h), axis=0))
 
-int_simp = jit(_int_simp)
 
 # this is the original 3D permute
 # for general use
-def _permutexyz(x=0, y=0, z=0):
+@njit()
+def permutexyz(x=0, y=0, z=0):
     isx = isinstance(x, np.ndarray)
     isy = isinstance(y, np.ndarray)
     isz = isinstance(z, np.ndarray)
@@ -81,11 +79,10 @@ def _permutexyz(x=0, y=0, z=0):
         z = z[None, :]
     return x, y, z
 
-permutexyz = jit(_permutexyz)
-
 # the original permute up to 6 dimensions
 # for general 6D use
-def _permutexyz6(x=0, y=0, z=0, xi=0, yi=0, zi=0):
+@njit()
+def permutexyz6(x=0, y=0, z=0, xi=0, yi=0, zi=0):
     isx  = isinstance(x, np.ndarray)
     isy  = isinstance(y, np.ndarray)
     isz  = isinstance(z, np.ndarray)
@@ -155,22 +152,21 @@ def _permutexyz6(x=0, y=0, z=0, xi=0, yi=0, zi=0):
 
     return dim[0], dim[1], dim[2], dim[3], dim[4], dim[5]
 
-permutexyz6 = jit(_permutexyz6)
-
 # strict 3D permute 
 # useful for gauss/monte carlo
-def _permutexyz3D(x,y,z):
+@njit( parallel = True)
+def permutexyz3D(x,y,z):
     x = x[:, None, None]
     y = y[None, :, None]
     z = z[None, None, :]
 
     return x, y, z
 
-permutexyz3D = jit(_permutexyz3D)
 
 # strict 6D permute 
 # useful for gauss/monte carlo
-def _permutexyz6D(x,y,z,xi,yi,zi):
+@njit( parallel = True)
+def permutexyz6D(x,y,z,xi,yi,zi):
     x  =  x[:, None, None, None, None, None]
     y  =  y[None, :, None, None, None, None]
     z  =  z[None, None, :, None, None, None]
@@ -180,7 +176,6 @@ def _permutexyz6D(x,y,z,xi,yi,zi):
 
     return x, y, z, xi, yi, zi
 
-permutexyz6D = jit(_permutexyz6D)
 
 # original 3D gauss integrator function
 def gauss3D(f, bounds, steps=35, error=0.0):
