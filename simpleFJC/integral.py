@@ -1,6 +1,7 @@
 import numpy as np
 from numba.decorators import jit
 from numba import prange, njit
+import numba as nb
 from gaussxw import gaussxwab  
 
 @jit()
@@ -259,6 +260,62 @@ def integrate(f, bounds, steps=10 ** 5, method="trap", error=0.0):
         def inty(z):
             return int_func(intx(z), bounds[1][0], bounds[1][1], steps, error=error)
         return int_func(inty, bounds[2][0], bounds[2][1], steps, error=error)
+
+@jit(parallel=True)
+def interestLinear(shape=None,bounds=None):
+    uniformBounds = True
+    boundsLow  = bounds[0][0]
+    boundsHigh = bounds[0][1]
+    for bound in bounds:
+        if boundsLow != bound[0] :
+            uniformBounds = False
+            break
+        if boundsHigh != bound[1]:
+            uniformBounds = False
+            break
+        pass
+    if uniformBounds :
+        pass
+    else :
+        pass
+
+    pass
+
+@jit(parallel=True)
+def interestNormal(shape=None,bounds=None):
+    width = []
+    shift = []
+    if bounds is not None:
+        for index, lower, upper in enumerate(bounds):
+            width.append(upper - lower)
+            shift.append(lower)
+            pass
+        pass
+    pass
+
+@jit()
+def interest3D3DNormal(shape=None,bounds=None):
+    # this interest function is useful where the 2nd 3 dimension depends on the 1st 3
+    pass
+
+@jit()
+def interestMixed(shape=None,bounds=None):
+    pass
+
+@njit(parallel=True)
+def numba_monteCarlo(f,interest=None,interestName='linear'):
+    """
+    interest functions: 
+        'linear','uniform'
+        'normal'
+    """
+    if interest is None:
+        if interestName in ['linear', 'lin', 'l', 'uniform', 'uni', 'u'] :
+            interest = interestLinear
+        elif interestName in ['normal','norm','n','gauss']:
+            interest = interestNormal
+
+    pass
 
 """
 # unfinished 6D gauss integral
